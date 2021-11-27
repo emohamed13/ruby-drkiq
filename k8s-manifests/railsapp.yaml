@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app-name: drkiq
+  name: drkiq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app-name: drkiq
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app-name: drkiq
+    spec:
+      containers:
+        - env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: rails-secrets
+                  key: database-url
+            - name: SECRET_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: rails-secrets
+                  key: secret-token
+            - name: CACHE_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: CACHE_URL
+                  name: env-config
+            - name: JOB_WORKER_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: JOB_WORKER_URL
+                  name: env-config
+            - name: LISTEN_ON
+              valueFrom:
+                configMapKeyRef:
+                  key: LISTEN_ON
+                  name: env-config
+            - name: WORKER_PROCESSES
+              valueFrom:
+                configMapKeyRef:
+                  key: WORKER_PROCESSES
+                  name: env-config
+          image: emohamed13/ruby-drkiq:latest
+          name: drkiq
+          ports:
+            - containerPort: 8010
+          resources: {}
+      restartPolicy: Always
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app-name: drkiq
+  name: drkiq
+spec:
+  ports:
+    - name: "8010"
+      port: 8010
+      targetPort: 8010
+  selector:
+    app-name: drkiq

@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app-name: postgres
+  name: postgres
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app-name: postgres
+  template:
+    metadata:
+      labels:
+        app-name: postgres
+    spec:
+      containers:
+        - env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: rails-secrets
+                  key: postgres-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rails-secrets
+                  key: postgres-password
+          image: postgres:12.1
+          name: postgres
+          ports:
+            - containerPort: 5432
+          resources: {}
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: drkiq-postgres
+      restartPolicy: Always
+      volumes:
+        - name: drkiq-postgres
+          persistentVolumeClaim:
+            claimName: drkiq-postgres
+  volumeClaimTemplates:
+     - metadata:
+         name: drkiq-postgres
+       spec:
+         storageClassName: "local-storage"
+         accessModes: [ "ReadWriteOnce" ]
+         resources:
+           requests:
+             storage: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app-name: postgres
+  name: postgres
+spec:
+  ports:
+    - name: "5432"
+      port: 5432
+      targetPort: 5432
+  selector:
+    app-name: postgres

@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app-name: nginx
+  name: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app-name: nginx
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app-name: nginx
+    spec:
+      containers:
+        - image: emohamed13/ruby-nginx:latest
+          name: nginx
+          ports:
+            - containerPort: 8020
+          resources: {}
+      restartPolicy: Always
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app-name: nginx
+  name: nginx
+spec:
+  ports:
+    - name: "8020"
+      port: 8020
+      targetPort: 8020
+      nodePort: 30600
+  selector:
+    app-name: nginx
+  type: NodePort

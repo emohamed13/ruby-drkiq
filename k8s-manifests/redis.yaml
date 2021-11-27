@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app-name: redis
+  name: redis
+spec:
+  serviceName: redis
+  replicas: 1
+  selector:
+    matchLabels:
+      app-name: redis
+  template:
+    metadata:
+      labels:
+        app-name: redis
+    spec:
+      containers:
+        - image: redis:5.0.7
+          name: redis
+          ports:
+            - containerPort: 6379
+          resources: {}
+          volumeMounts:
+            - mountPath: /var/lib/redis/data
+              name: drkiq-redis
+      restartPolicy: Always
+      volumes:
+        - name: drkiq-redis
+          persistentVolumeClaim:
+            claimName: drkiq-redis
+  volumeClaimTemplates:
+     - metadata:
+         name: drkiq-redis
+       spec:
+         storageClassName: "local-storage"
+         accessModes: [ "ReadWriteOnce" ]
+         resources:
+           requests:
+             storage: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app-name: redis
+  name: redis
+spec:
+  ports:
+    - name: "6379"
+      port: 6379
+      targetPort: 6379
+  selector:
+    app-name: redis
