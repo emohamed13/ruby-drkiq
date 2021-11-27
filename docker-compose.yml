@@ -6,7 +6,7 @@ services:
     image: postgres:12.1
     environment:
       POSTGRES_USER: drkiq
-      POSTGRES_PASSWORD: test_db_password
+      POSTGRES_PASSWORD: test
     ports: 
       - '5432:5432'
     volumes:
